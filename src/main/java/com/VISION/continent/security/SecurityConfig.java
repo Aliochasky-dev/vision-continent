@@ -37,7 +37,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
                         // ─── Swagger UI ──────────────────────────────────────────
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -51,6 +50,9 @@ public class SecurityConfig {
                         // ─── Auth publique ───────────────────────────────────────
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // ─── Racine (important pour Railway) ─────────────────────
+                        .requestMatchers("/", "/index.html", "/health", "/ping").permitAll()
+
                         // ─── Lecture publique (sans connexion) ───────────────────
                         .requestMatchers(
                                 org.springframework.http.HttpMethod.GET,
@@ -60,13 +62,9 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // ─── ADMIN uniquement ────────────────────────────────────
-                        // Résoudre un marché
                         .requestMatchers("/api/marches/*/resoudre").hasRole("ADMIN")
-                        // Confirmer un dépôt Mobile Money
                         .requestMatchers("/api/transactions/depot/*/confirmer").hasRole("ADMIN")
-                        // Changer statut d'un événement
                         .requestMatchers("/api/evenements/*/statut").hasRole("ADMIN")
-                        // Activer/désactiver une catégorie
                         .requestMatchers("/api/categories/*/toggle").hasRole("ADMIN")
 
                         // ─── Tout le reste : utilisateur connecté ────────────────
