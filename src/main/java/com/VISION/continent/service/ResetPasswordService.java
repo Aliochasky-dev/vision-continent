@@ -1,5 +1,6 @@
 package com.VISION.continent.service;
 
+import com.VISION.continent.config.AppProperties;
 import com.VISION.continent.entity.ResetToken;
 import com.VISION.continent.entity.User;
 import com.VISION.continent.repository.ResetTokenRepository;
@@ -19,6 +20,7 @@ public class ResetPasswordService {
     private final ResetTokenRepository resetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailOtpService emailOtpService;
+    private final AppProperties appProperties;
 
     public void sendResetToken(String email) {
         String cleanEmail = email.trim();
