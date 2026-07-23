@@ -52,14 +52,45 @@ public class EmailOtpService {
             service.users().messages().send("me", message).execute();
 
         } catch (Throwable e) {
-        e.printStackTrace();
-        Throwable cause = e.getCause();
-        while (cause != null) {
-            System.err.println("Cause : " + cause);
-            cause = cause.getCause();
+            e.printStackTrace();
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                System.err.println("Cause : " + cause);
+                cause = cause.getCause();
+            }
+            throw new RuntimeException("Impossible d'envoyer l'email OTP : " + e.getMessage());
         }
-        throw new RuntimeException("Impossible d'envoyer l'email OTP : " + e.getMessage());
     }
+
+    public void sendGenericEmail(String toEmail, String subject, String body) {
+        try {
+            UserCredentials credentials = UserCredentials.newBuilder()
+                    .setClientId(clientId)
+                    .setClientSecret(clientSecret)
+                    .setRefreshToken(refreshToken)
+                    .build();
+
+            Gmail service = new Gmail.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    GsonFactory.getDefaultInstance(),
+                    new HttpCredentialsAdapter(credentials))
+                    .setApplicationName("VISION")
+                    .build();
+
+            Session session = Session.getDefaultInstance(new Properties(), null);
+            MimeMessage mimeMessage = new MimeMessage(session);
+            mimeMessage.setFrom(new InternetAddress(fromEmail));
+            mimeMessage.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(toEmail));
+            mimeMessage.setSubject(subject);
+            mimeMessage.setText(body);
+
+            Message message = createMessageWithEmail(mimeMessage);
+            service.users().messages().send("me", message).execute();
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw new RuntimeException("Impossible d'envoyer l'email : " + e.getMessage());
+        }
     }
 
     private MimeMessage createEmail(String to, String from, String otp) throws Exception {
