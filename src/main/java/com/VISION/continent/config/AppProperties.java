@@ -1,14 +1,14 @@
 package com.VISION.continent.config;
 
-import lombok.Getter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Getter
 @Component
-@ConfigurationProperties(prefix = "app.frontend")
 public class AppProperties {
 
-    private String url = "http://localhost:8080";
-    private String resetPasswordPath = "/reset-password";
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String url;
+
+    @Value("${app.frontend.reset-password-path:/reset-password}")
+    private String resetPasswordPath;
 }
