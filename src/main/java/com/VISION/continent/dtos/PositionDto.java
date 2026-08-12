@@ -36,6 +36,7 @@ public class PositionDto {
         private UUID id;
         private UUID marcheId;
         private String marcheQuestion;
+        private UUID evenementId;
         private String evenementTitre;
         private Position.Choix choix;
         private BigDecimal montantMiseFcfa;

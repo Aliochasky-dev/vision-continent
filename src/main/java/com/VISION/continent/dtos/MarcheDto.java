@@ -21,6 +21,10 @@ public class MarcheDto {
 
         @Schema(example = "https://cdn.vision.cm/icons/cameroun.png")
         private String iconeUrl;
+
+        @Schema(example = "Quintuple champion d'Afrique, le Cameroun aligne Onana et Anguissa...",
+                description = "Infos sur cette option (palmarès, forme, biographie) pour guider le choix")
+        private String description;
     }
 
     @Getter @Setter @Builder
@@ -29,6 +33,7 @@ public class MarcheDto {
         private UUID id;
         private String question;
         private String iconeUrl;
+        private String description;
         private BigDecimal prixOui;
         private BigDecimal prixNon;
         private BigDecimal volumeFcfa;

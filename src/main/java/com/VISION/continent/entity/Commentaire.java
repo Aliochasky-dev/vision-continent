@@ -26,9 +26,11 @@ public class Commentaire {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String contenu;
 
-    @Column(name = "nb_likes")
+    @Builder.Default
+    @Column(name = "nb_likes", nullable = false)
     private Integer nbLikes = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean signale = false;
 

@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ResetTokenRepository extends JpaRepository<ResetToken, Long> {
     Optional<ResetToken> findByToken(String token);
+    void deleteByEmail(String email);
 }

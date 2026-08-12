@@ -27,6 +27,11 @@ public class Marche {
     @Column(name = "icone_url")
     private String iconeUrl;
 
+    // Infos spécifiques à cette option (palmarès, forme, biographie...) pour
+    // guider l'utilisateur dans son choix.
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(name = "pool_oui_fcfa", precision = 18, scale = 2, nullable = false)
     @Builder.Default
     private BigDecimal poolOuiFcfa = BigDecimal.ZERO;

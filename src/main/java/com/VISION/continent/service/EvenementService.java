@@ -105,6 +105,7 @@ public class EvenementService {
                     .evenement(ev)
                     .question(mr.getQuestion())
                     .iconeUrl(mr.getIconeUrl())
+                    .description(mr.getDescription())
                     .statut(Marche.Statut.OUVERT)
                     .build();
             marcheRepository.save(marche);
@@ -190,6 +191,7 @@ public class EvenementService {
                 .id(m.getId())
                 .question(m.getQuestion())
                 .iconeUrl(m.getIconeUrl())
+                .description(m.getDescription())
                 .prixOui(m.getPrixOui())
                 .prixNon(m.getPrixNon())
                 .volumeFcfa(m.getVolumeFcfa())

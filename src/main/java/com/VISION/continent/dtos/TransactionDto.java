@@ -16,6 +16,12 @@ import java.util.UUID;
 
 public class TransactionDto {
 
+    /** Renvoie le premier champ non vide entre `reference` et `numero`. */
+    private static String contact(String reference, String numero) {
+        if (reference != null && !reference.isBlank()) return reference;
+        return numero;
+    }
+
     @Getter @Setter
     @Schema(name = "DepotRequest", description = "Initier un dépôt Mobile Money")
     public static class DepotRequest {
@@ -29,9 +35,15 @@ public class TransactionDto {
         @Schema(example = "ORANGE_MONEY", description = "ORANGE_MONEY ou MTN_MOMO")
         private Transaction.Operateur operateur;
 
-        @NotBlank
-        @Schema(example = "OM20260522001", description = "Référence de la transaction Mobile Money")
+        // Le numéro/référence Mobile Money — les deux noms sont acceptés pour
+        // compatibilité (voir getContact()).
+        @Schema(example = "+237699000001", description = "Numéro Mobile Money")
+        private String numeroCible;
+
+        @Schema(example = "OM20260522001", description = "Référence Mobile Money (alias de numeroCible)")
         private String referenceMobileMoney;
+
+        public String getContact() { return contact(referenceMobileMoney, numeroCible); }
     }
 
     @Getter @Setter
@@ -47,9 +59,13 @@ public class TransactionDto {
         @Schema(example = "MTN_MOMO", description = "ORANGE_MONEY ou MTN_MOMO")
         private Transaction.Operateur operateur;
 
-        @NotBlank
         @Schema(example = "+237699000001", description = "Numéro Mobile Money de destination")
         private String numeroCible;
+
+        @Schema(example = "OM20260522001", description = "Référence Mobile Money (alias de numeroCible)")
+        private String referenceMobileMoney;
+
+        public String getContact() { return contact(referenceMobileMoney, numeroCible); }
     }
 
     @Getter @Setter @Builder

@@ -22,11 +22,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VisionController {
 
-    private final CategorieService   categorieService;
-    private final EvenementService   evenementService;
-    private final PositionService    positionService;
-    private final TransactionService transactionService;
-    private final CommentaireService commentaireService;
+    private final CategorieService    categorieService;
+    private final EvenementService    evenementService;
+    private final PositionService     positionService;
+    private final TransactionService  transactionService;
+    private final CommentaireService  commentaireService;
+    private final UserService         userService;
+    private final AnalyticsService    analyticsService;
+    private final NotificationService notificationService;
 
     // ═══════════════════════════════════════════════════════════════
     //  CATÉGORIES
@@ -221,6 +224,13 @@ public class VisionController {
                         transactionService.initierRetrait(req, user.getUsername())));
     }
 
+    @PostMapping("/api/transactions/retrait/{id}/confirmer")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> confirmerRetrait(@PathVariable UUID id) {
+        transactionService.confirmerRetrait(id);
+        return ResponseEntity.ok(ApiResponse.ok("Retrait confirmé, solde débité", null));
+    }
+
     @GetMapping("/api/transactions/historique")
     public ResponseEntity<ApiResponse<List<TransactionDto.Response>>> historique(
             @AuthenticationPrincipal UserDetails user) {
@@ -283,5 +293,55 @@ public class VisionController {
             @AuthenticationPrincipal UserDetails user) {
         commentaireService.supprimer(commentaireId, user.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("Commentaire supprimé", null));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  UTILISATEUR CONNECTÉ (profil + statistiques)
+    // ═══════════════════════════════════════════════════════════════
+
+    @GetMapping("/api/me")
+    public ResponseEntity<ApiResponse<MeDto.MeResponse>> getMe(
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getMe(user.getUsername())));
+    }
+
+    @GetMapping("/api/me/stats")
+    public ResponseEntity<ApiResponse<MeDto.StatsResponse>> getMesStats(
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getStats(user.getUsername())));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  CLASSEMENT & ACTIVITÉ (publics)
+    // ═══════════════════════════════════════════════════════════════
+
+    @GetMapping("/api/leaderboard")
+    public ResponseEntity<ApiResponse<List<AnalyticsDto.LeaderboardRow>>> leaderboard(
+            @RequestParam(defaultValue = "50") int limit) {
+        return ResponseEntity.ok(ApiResponse.ok(analyticsService.getLeaderboard(limit)));
+    }
+
+    @GetMapping("/api/activite")
+    public ResponseEntity<ApiResponse<List<AnalyticsDto.ActiviteRow>>> activite(
+            @RequestParam(defaultValue = "20") int limit) {
+        return ResponseEntity.ok(ApiResponse.ok(analyticsService.getActivite(limit)));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  NOTIFICATIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    @GetMapping("/api/notifications")
+    public ResponseEntity<ApiResponse<List<NotificationDto.Response>>> getNotifications(
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(ApiResponse.ok(notificationService.getMine(user.getUsername())));
+    }
+
+    @PatchMapping("/api/notifications/{id}/lu")
+    public ResponseEntity<ApiResponse<Void>> markNotificationRead(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetails user) {
+        notificationService.markRead(id, user.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Notification marquée comme lue", null));
     }
 }

@@ -23,6 +23,7 @@ public class PositionService {
     private final MarcheRepository marcheRepository;
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public PositionDto.Response placerMise(PositionDto.Request req, String telephone) {
@@ -114,17 +115,26 @@ public class PositionService {
 
                 pos.setStatut(Position.Statut.REMBOURSE);
                 positionRepository.save(pos);
+
+                // Notification remboursement
+                notificationService.create(
+                        user,
+                        Notification.TypeNotif.REMBOURSEMENT,
+                        "Mise remboursée",
+                        "Votre mise de " + pos.getMontantMiseFcfa() + " FCFA a été remboursée (aucun gagnant)."
+                );
             }
             return;
         }
 
         for (Position pos : positions) {
+            User user = pos.getUser();
+
             if (pos.getChoix() == choixGagnant) {
                 BigDecimal part = pos.getMontantMiseFcfa()
                         .divide(poolGagnant, 8, RoundingMode.HALF_UP);
                 BigDecimal gain = part.multiply(poolTotal).setScale(2, RoundingMode.HALF_UP);
 
-                User user = pos.getUser();
                 user.setSoldeFcfa(user.getSoldeFcfa().add(gain));
                 userRepository.save(user);
 
@@ -136,26 +146,47 @@ public class PositionService {
                         .build());
 
                 pos.setStatut(Position.Statut.GAGNEE);
+                positionRepository.save(pos);
+
+                // Notification gain
+                notificationService.create(
+                        user,
+                        Notification.TypeNotif.GAIN,
+                        "Félicitations ! Vous avez gagné",
+                        "Vous avez gagné " + gain + " FCFA sur le marché \"" + marche.getQuestion() + "\"."
+                );
             } else {
                 pos.setStatut(Position.Statut.PERDUE);
+                positionRepository.save(pos);
+
+                // Notification perte (optionnel mais recommandé)
+                notificationService.create(
+                        user,
+                        Notification.TypeNotif.PERTE,
+                        "Résultat du marché",
+                        "Votre position sur \"" + marche.getQuestion() + "\" a perdu."
+                );
             }
-            positionRepository.save(pos);
         }
     }
 
+    @Transactional(readOnly = true)
     public List<PositionDto.Response> getMesPositions(String telephone) {
         User user = userRepository.findByTelephone(telephone)
                 .orElseThrow(() -> new VisionException("Utilisateur introuvable"));
-        return positionRepository.findByUserId(user.getId())
+        return positionRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     private PositionDto.Response toResponse(Position p) {
+        Marche m = p.getMarche();
+        Evenement ev = m.getEvenement();
         return PositionDto.Response.builder()
                 .id(p.getId())
-                .marcheId(p.getMarche().getId())
-                .marcheQuestion(p.getMarche().getQuestion())
-                .evenementTitre(p.getMarche().getEvenement().getTitre())
+                .marcheId(m.getId())
+                .marcheQuestion(m.getQuestion())
+                .evenementId(ev.getId())
+                .evenementTitre(ev.getTitre())
                 .choix(p.getChoix())
                 .montantMiseFcfa(p.getMontantMiseFcfa())
                 .statut(p.getStatut())

@@ -20,6 +20,7 @@ public class CommentaireService {
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
 
+    @Transactional(readOnly = true)
     public Page<CommentaireDto.Response> getCommentaires(UUID evenementId, int page, int size, String telephone) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Commentaire> commentaires = commentaireRepository

@@ -1,6 +1,5 @@
 package com.VISION.continent.entity;
 
-
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -22,47 +21,21 @@ public class ResetToken {
     @Column(nullable = false)
     private LocalDateTime expiryDate;
 
-
-
-    // CONSTRUCTEUR VIDE OBLIGATOIRE POUR HIBERNATE
     public ResetToken() {
-        // Laisser vide ou initialiser les champs si besoin
     }
 
-    // Constructeur
     public ResetToken(String token, String email) {
         this.token = token;
         this.email = email;
-        this.expiryDate = LocalDateTime.now().plusMinutes(1);
+        this.expiryDate = LocalDateTime.now().plusMinutes(10);
     }
 
-    public ResetToken(String token, String email, LocalDateTime expiryDate){
-        this.token = token;
-    }
-    public Long getId(){
-        return id;
-    }
-    public void setId(Long id){
-        this.id = id;
-    }
-    public String getToken(){
-        return token;
-    }
-    public void setToken(String token){
-        this.token = token;
-    }
-    public String getEmail(){
-        return email;
-    }
-    public void setEmail(String email){
-        this.email = email;
-    }
-    public LocalDateTime getExpiryDate(){
-        return expiryDate;
-    }
-    public void setExpiryDate(LocalDateTime expiryDate){
-        this.expiryDate = expiryDate;
-    }
-
-
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public LocalDateTime getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(LocalDateTime expiryDate) { this.expiryDate = expiryDate; }
 }

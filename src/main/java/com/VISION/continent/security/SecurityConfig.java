@@ -58,12 +58,15 @@ public class SecurityConfig {
                                 org.springframework.http.HttpMethod.GET,
                                 "/api/evenements/**",
                                 "/api/categories/**",
-                                "/api/marches/**"
+                                "/api/marches/**",
+                                "/api/leaderboard",
+                                "/api/activite"
                         ).permitAll()
 
                         // ─── ADMIN uniquement ────────────────────────────────────
                         .requestMatchers("/api/marches/*/resoudre").hasRole("ADMIN")
                         .requestMatchers("/api/transactions/depot/*/confirmer").hasRole("ADMIN")
+                        .requestMatchers("/api/transactions/retrait/*/confirmer").hasRole("ADMIN")
                         .requestMatchers("/api/evenements/*/statut").hasRole("ADMIN")
                         .requestMatchers("/api/categories/*/toggle").hasRole("ADMIN")
 

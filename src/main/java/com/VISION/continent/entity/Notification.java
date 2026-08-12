@@ -29,6 +29,7 @@ public class Notification {
     @Column(nullable = false)
     private String message;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean lue = false;
 
@@ -40,5 +41,5 @@ public class Notification {
         createdAt = LocalDateTime.now();
     }
 
-    public enum TypeNotif { RESOLUTION, GAIN, REPONSE, DEPOT_CONFIRME, SYSTEME }
+    public enum TypeNotif { RESOLUTION, GAIN,PERTE, REPONSE, DEPOT_CONFIRME, SYSTEME,REMBOURSEMENT }
 }
