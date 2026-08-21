@@ -15,17 +15,23 @@ import java.util.UUID;
 public class RetraitDto {
 
     @Getter @Setter
-    @Schema(name = "WalletRetraitRequest", description = "Initier un retrait via CinetPay")
+    @Schema(name = "WalletRetraitRequest", description = "Initier un retrait via Nokash")
     public static class Request {
         @NotNull
         @Positive
-        @Min(value = 1000, message = "Retrait minimum : 1000 FCFA")
+        @Min(value = 100, message = "Retrait minimum : 100 FCFA")
         @Schema(example = "2000", description = "Montant à retirer en FCFA (minimum 1000)")
         private BigDecimal montantFcfa;
 
         @NotBlank
         @Schema(example = "+237690123456", description = "Numéro Mobile Money de destination")
         private String telephoneDestination;
+
+        @NotNull
+        @Schema(example = "MTN_MOMO", description = "Opérateur Mobile Money", allowableValues = {"MTN_MOMO", "ORANGE_MONEY"})
+        private Operateur operateur;
+
+        public enum Operateur { MTN_MOMO, ORANGE_MONEY }
     }
 
     @Getter @Setter @Builder

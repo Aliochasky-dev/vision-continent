@@ -53,6 +53,12 @@ public class SecurityConfig {
                         // ─── Racine (important pour Railway) ─────────────────────
                         .requestMatchers("/", "/index.html", "/health", "/ping").permitAll()
 
+                        // ─── Webhooks publics (appelés par les fournisseurs de paiement) ─
+                                .requestMatchers("/api/wallet/webhooks/**").permitAll()
+
+                        // ─── Auth publique ───────────────────────────────────────
+                                .requestMatchers("/api/auth/**").permitAll()
+
                         // ─── Lecture publique (sans connexion) ───────────────────
                         .requestMatchers(
                                 org.springframework.http.HttpMethod.GET,

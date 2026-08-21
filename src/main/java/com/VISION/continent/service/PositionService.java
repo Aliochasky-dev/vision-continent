@@ -24,11 +24,13 @@ public class PositionService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final NotificationService notificationService;
+    private final WalletService walletService;
 
     @Transactional
-    public PositionDto.Response placerMise(PositionDto.Request req, String telephone) {
-        User user = userRepository.findByTelephone(telephone)
+    public PositionDto.Response placerMise(PositionDto.Request req, Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new VisionException("Utilisateur introuvable"));
+
 
         Marche marche = marcheRepository.findById(req.getMarcheId())
                 .orElseThrow(() -> new VisionException("Marché introuvable"));
@@ -42,8 +44,10 @@ public class PositionService {
         if (marche.getEvenement().getDateFin().isBefore(LocalDateTime.now())) {
             throw new VisionException("La date limite de ce marché est dépassée");
         }
-        if (user.getSoldeFcfa().compareTo(req.getMontantFcfa()) < 0) {
-            throw new VisionException("Solde insuffisant. Solde actuel : " + user.getSoldeFcfa() + " FCFA");
+
+        Wallet wallet = walletService.getOrCreateWallet(user);
+        if (wallet.getSoldeFcfa().compareTo(req.getMontantFcfa()) < 0) {
+            throw new VisionException("Solde insuffisant. Solde actuel : " + wallet.getSoldeFcfa() + " FCFA");
         }
 
         Position position = Position.builder()
@@ -55,8 +59,10 @@ public class PositionService {
                 .build();
         position = positionRepository.save(position);
 
-        user.setSoldeFcfa(user.getSoldeFcfa().subtract(req.getMontantFcfa()));
-        userRepository.save(user);
+        // Débit direct du wallet (opération interne, pas de fournisseur externe à attendre)
+        walletService.crediterDirect(wallet, req.getMontantFcfa().negate(),
+                com.VISION.continent.entity.WalletTransaction.Categorie.MISE,
+                "Mise sur \"" + marche.getQuestion() + "\"", position);
 
         transactionRepository.save(Transaction.builder()
                 .user(user).position(position)
@@ -65,7 +71,6 @@ public class PositionService {
                 .statutPaiement(Transaction.StatutPaiement.CONFIRME)
                 .build());
 
-        // Alimente le bon pool — c'est ce qui fait bouger le prix automatiquement
         if (req.getChoix() == Position.Choix.OUI) {
             marche.setPoolOuiFcfa(marche.getPoolOuiFcfa().add(req.getMontantFcfa()));
         } else {
@@ -99,12 +104,13 @@ public class PositionService {
 
         List<Position> positions = positionRepository.findByMarcheId(marcheId);
 
-        // Cas particulier : personne n'a misé sur le côté gagnant → rembourser tout le monde
         if (poolGagnant.compareTo(BigDecimal.ZERO) == 0) {
             for (Position pos : positions) {
                 User user = pos.getUser();
-                user.setSoldeFcfa(user.getSoldeFcfa().add(pos.getMontantMiseFcfa()));
-                userRepository.save(user);
+                Wallet wallet = walletService.getOrCreateWallet(user);
+                walletService.crediterDirect(wallet, pos.getMontantMiseFcfa(),
+                        com.VISION.continent.entity.WalletTransaction.Categorie.REMBOURSEMENT,
+                        "Remboursement (aucun gagnant)", pos);
 
                 transactionRepository.save(Transaction.builder()
                         .user(user).position(pos)
@@ -116,7 +122,6 @@ public class PositionService {
                 pos.setStatut(Position.Statut.REMBOURSE);
                 positionRepository.save(pos);
 
-                // Notification remboursement
                 notificationService.create(
                         user,
                         Notification.TypeNotif.REMBOURSEMENT,
@@ -135,8 +140,10 @@ public class PositionService {
                         .divide(poolGagnant, 8, RoundingMode.HALF_UP);
                 BigDecimal gain = part.multiply(poolTotal).setScale(2, RoundingMode.HALF_UP);
 
-                user.setSoldeFcfa(user.getSoldeFcfa().add(gain));
-                userRepository.save(user);
+                Wallet wallet = walletService.getOrCreateWallet(user);
+                walletService.crediterDirect(wallet, gain,
+                        com.VISION.continent.entity.WalletTransaction.Categorie.GAIN_RESOLUTION,
+                        "Gain sur \"" + marche.getQuestion() + "\"", pos);
 
                 transactionRepository.save(Transaction.builder()
                         .user(user).position(pos)
@@ -148,7 +155,6 @@ public class PositionService {
                 pos.setStatut(Position.Statut.GAGNEE);
                 positionRepository.save(pos);
 
-                // Notification gain
                 notificationService.create(
                         user,
                         Notification.TypeNotif.GAIN,
@@ -159,7 +165,6 @@ public class PositionService {
                 pos.setStatut(Position.Statut.PERDUE);
                 positionRepository.save(pos);
 
-                // Notification perte (optionnel mais recommandé)
                 notificationService.create(
                         user,
                         Notification.TypeNotif.PERTE,
@@ -171,8 +176,8 @@ public class PositionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PositionDto.Response> getMesPositions(String telephone) {
-        User user = userRepository.findByTelephone(telephone)
+    public List<PositionDto.Response> getMesPositions(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new VisionException("Utilisateur introuvable"));
         return positionRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream().map(this::toResponse).collect(Collectors.toList());

@@ -35,8 +35,9 @@ public class WalletController {
     @GetMapping
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Mon portefeuille", description = "Récupère les informations du portefeuille de l'utilisateur connecté (solde, date de création)")
-    public ResponseEntity<ApiResponse<WalletDto.Response>> monWallet(@AuthenticationPrincipal UserDetails user) {
-        User u = userRepository.findByTelephone(user.getUsername())
+    public ResponseEntity<ApiResponse<WalletDto.Response>> monWallet(
+            @RequestAttribute(value = "userId", required = false) Long userId) {
+        User u = userRepository.findById(userId)
                 .orElseThrow(() -> new VisionException("Utilisateur introuvable"));
         var wallet = walletService.getOrCreateWallet(u);
         return ResponseEntity.ok(ApiResponse.ok(walletService.toResponse(wallet)));
@@ -58,9 +59,9 @@ public class WalletController {
     @Operation(summary = "Initier un dépôt", description = "Initie un dépôt au portefeuille via Orange Money ou MTN MoMo en attente de confirmation admin")
     public ResponseEntity<ApiResponse<DepotDto.Response>> depot(
             @Valid @RequestBody DepotDto.Request req,
-            @AuthenticationPrincipal UserDetails user) {
+            @RequestAttribute(value = "userId", required = false) Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Dépôt initié", depotService.initierDepot(req, user.getUsername())));
+                .body(ApiResponse.ok("Dépôt initié", depotService.initierDepot(req, userId)));
     }
 
     @PostMapping("/depot/{walletTransactionId}/confirmer")
@@ -79,9 +80,9 @@ public class WalletController {
     @Operation(summary = "Initier un retrait", description = "Initie un retrait du portefeuille vers Mobile Money en attente de confirmation admin")
     public ResponseEntity<ApiResponse<RetraitDto.Response>> retrait(
             @Valid @RequestBody RetraitDto.Request req,
-            @AuthenticationPrincipal UserDetails user) {
+            @RequestAttribute(value = "userId", required = false) Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Retrait initié", retraitService.initierRetrait(req, user.getUsername())));
+                .body(ApiResponse.ok("Retrait initié", retraitService.initierRetrait(req, userId)));
     }
 
     @PostMapping("/retrait/{walletTransactionId}/confirmer")

@@ -72,6 +72,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
+                if (jwtUtil.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    // Propage l'ID utilisateur pour les lookups fiables (indépendants du téléphone)
+                    Long userId = jwtUtil.extractUserId(token);
+                    if (userId != null) {
+                        request.setAttribute("userId", userId);
+                    }
+                }
             }
         } catch (Exception e) {
             System.out.println("JwtFilter - Erreur validation JWT : " + e.getMessage());

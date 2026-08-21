@@ -151,7 +151,6 @@ public class VisionController {
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Créer un événement", description = "Crée un nouvel événement (Admin seulement)")
-    
     public ResponseEntity<ApiResponse<EvenementDto.Response>> createEvenement(
             @RequestBody(
                     description = "Données de l'événement à créer",
@@ -159,10 +158,10 @@ public class VisionController {
                     content = @Content(schema = @Schema(implementation = EvenementDto.Request.class))
             )
             @Valid @org.springframework.web.bind.annotation.RequestBody EvenementDto.Request req,
-            @AuthenticationPrincipal UserDetails user) {
+            @RequestAttribute(value = "userId", required = false) Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Événement créé",
-                        evenementService.create(req, user.getUsername())));
+                        evenementService.create(req, userId)));
     }
 
     @PutMapping("/api/evenements/{id}")
@@ -203,7 +202,7 @@ public class VisionController {
     @PostMapping("/api/positions")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Placer une mise", description = "Place une mise OUI ou NON sur un marché d'un événement")
-    
+
     public ResponseEntity<ApiResponse<PositionDto.Response>> placerMise(
             @RequestBody(
                     description = "Mise OUI ou NON sur un marché",
@@ -211,20 +210,20 @@ public class VisionController {
                     content = @Content(schema = @Schema(implementation = PositionDto.Request.class))
             )
             @Valid @org.springframework.web.bind.annotation.RequestBody PositionDto.Request req,
-            @AuthenticationPrincipal UserDetails user) {
+            @RequestAttribute(value = "userId", required = false) Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Mise enregistrée",
-                        positionService.placerMise(req, user.getUsername())));
+                        positionService.placerMise(req, userId)));
     }
 
     @GetMapping("/api/positions/mes-positions")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Mes positions", description = "Récupère toutes les mises de l'utilisateur connecté")
-    
+
     public ResponseEntity<ApiResponse<List<PositionDto.Response>>> getMesPositions(
-            @AuthenticationPrincipal UserDetails user) {
+            @RequestAttribute(value = "userId", required = false) Long userId) {
         return ResponseEntity.ok(ApiResponse.ok(
-                positionService.getMesPositions(user.getUsername())));
+                positionService.getMesPositions(userId)));
     }
 
     @PostMapping("/api/marches/{marcheId}/resoudre")

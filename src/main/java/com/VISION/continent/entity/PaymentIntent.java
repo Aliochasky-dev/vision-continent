@@ -24,6 +24,13 @@ public class PaymentIntent {
     @JoinColumn(name = "provider_id", nullable = false)
     private PaymentProvider provider;
 
+    // ─── NOUVEAU ─────────────────────────────────────────────
+    // Généré par nous à l'initiation, envoyé à Nokash en "order_id".
+    // C'est la clé de rapprochement quand le callback revient,
+    // car le callback ne connaît pas notre UUID interne.
+    @Column(name = "order_id", nullable = false, unique = true)
+    private String orderId;
+
     @Column(name = "provider_transaction_id")
     private String providerTransactionId;
 

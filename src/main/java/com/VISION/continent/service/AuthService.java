@@ -76,8 +76,9 @@ public class AuthService {
         user.setEmailVerifie(true);
         userRepository.save(user);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getTelephone());
-        String token = jwtUtil.generateToken(userDetails);
+        // Génère le token avec l'ID utilisateur embarqué (claim "userId"),
+        // au lieu de dépendre uniquement du téléphone (qui peut changer).
+        String token = jwtUtil.generateToken(user);
 
         return AuthDto.AuthResponse.builder()
                 .token(token)
@@ -125,8 +126,9 @@ public class AuthService {
 
         loginAttemptService.reinitialiserEchecs(identifiant);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getTelephone());
-        String token = jwtUtil.generateToken(userDetails);
+        // Génère le token avec l'ID utilisateur embarqué (claim "userId"),
+        // au lieu de dépendre uniquement du téléphone (qui peut changer).
+        String token = jwtUtil.generateToken(user);
 
         return AuthDto.AuthResponse.builder()
                 .token(token)

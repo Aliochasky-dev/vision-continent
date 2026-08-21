@@ -1,10 +1,7 @@
 package com.VISION.continent.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +12,7 @@ import java.util.UUID;
 public class DepotDto {
 
     @Getter @Setter
-    @Schema(name = "WalletDepotRequest", description = "Initier un dépôt via CinetPay")
+    @Schema(name = "WalletDepotRequest", description = "Initier un dépôt via Nokash")
     public static class Request {
         @NotNull
         @Positive
@@ -27,8 +24,14 @@ public class DepotDto {
         @Schema(example = "+237690123456", description = "Numéro de téléphone pour le paiement Mobile Money")
         private String telephonePaiement;
 
+        @NotNull
+        @Schema(example = "MTN_MOMO", description = "Opérateur Mobile Money", allowableValues = {"MTN_MOMO", "ORANGE_MONEY"})
+        private Operateur operateur;
+
         @Schema(example = "Rechargement de compte VISION", description = "Description affichée sur la page de paiement")
         private String description;
+
+        public enum Operateur { MTN_MOMO, ORANGE_MONEY }
     }
 
     @Getter @Setter @Builder

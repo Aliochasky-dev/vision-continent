@@ -78,4 +78,22 @@ public class JwtUtil {
         Date expiration = JWT.decode(token).getExpiresAt();
         return expiration.before(new Date());
     }
+    // Nouvelle surcharge : génère le token avec l'ID utilisateur en claim
+    public String generateToken(com.VISION.continent.entity.User user) {
+        String role = "ROLE_" + user.getRole().name();
+        return JWT.create()
+                .withSubject(user.getTelephone())
+                .withClaim("role", role)
+                .withClaim("userId", user.getId()) // Long, pas besoin de toString()
+                .withJWTId(java.util.UUID.randomUUID().toString())
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .sign(getAlgorithm());
+    }
+
+
+    // Extrait l'ID utilisateur du token
+    public Long extractUserId(String token) {
+        return JWT.decode(token).getClaim("userId").asLong();
+    }
 }

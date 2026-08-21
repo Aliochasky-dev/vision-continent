@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface PaymentIntentRepository extends JpaRepository<PaymentIntent, UUID> {
     Optional<PaymentIntent> findByWalletTransactionId(UUID walletTransactionId);
+    Optional<PaymentIntent> findByOrderId(String orderId);
 }

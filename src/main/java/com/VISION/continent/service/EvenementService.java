@@ -46,7 +46,6 @@ public class EvenementService {
 
         return result.map(this::toPageResponse);
     }
-
     @Transactional(readOnly = true)
     public EvenementDto.Response getDetail(UUID id) {
         Evenement ev = evenementRepository.findById(id)
@@ -71,9 +70,10 @@ public class EvenementService {
         return evenementRepository.searchByTitre(query, pageable).map(this::toPageResponse);
     }
 
+
     @Transactional
-    public EvenementDto.Response create(EvenementDto.Request req, String telephone) {
-        User createur = userRepository.findByTelephone(telephone)
+    public EvenementDto.Response create(EvenementDto.Request req, Long userId) {
+        User createur = userRepository.findById(userId)
                 .orElseThrow(() -> new VisionException("Utilisateur introuvable"));
         Categorie cat = categorieRepository.findById(req.getCategorieId())
                 .orElseThrow(() -> new VisionException("Catégorie introuvable"));

@@ -51,8 +51,8 @@ public class SwaggerConfig {
                                 .email("nzimbaaliocha15@gmail.com"))
                         .license(new License().name("Propriétaire — VISION Continent")))
                 .servers(List.of(
-                        new Server().url("http://localhost:7079").description("Local"),
-                        new Server().url("https://vision-continent-production.up.railway.app").description("Production")
+                        new Server().url("http://localhost:8081").description("Local")
+                        //new Server().url("https://vision-continent-production.up.railway.app").description("Production")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
